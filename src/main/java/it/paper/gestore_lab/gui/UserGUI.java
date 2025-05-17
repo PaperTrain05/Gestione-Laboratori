@@ -166,6 +166,23 @@ public class UserGUI extends JFrame {
             }
             if (sel < userPren.size()) {
                 gestorePrenotazione.getPrenotazioniCache().remove(userPren.get(sel));
+
+                Prenotazione pren = gestorePrenotazione.getPrenotazioniCache().get(sel);
+
+                String safeOrario = pren.getOrario().replace(":", "-");
+                String filePath = Main.BASE_PATH + File.separator + "prenotazioni"
+                        + File.separator + pren.getNomeUtente() + "-" + pren.getLaboratorio()
+                        + "-" + safeOrario + ".txt";
+
+                // Elimina il file se esiste
+                File file = new File(filePath);
+                if (file.exists()) {
+                    if (!file.delete()) {
+                        JOptionPane.showMessageDialog(this, "Errore durante la cancellazione del file.");
+                        return;
+                    }
+                }
+
                 refreshUserPrenotations();
                 refreshDashboard();
             }

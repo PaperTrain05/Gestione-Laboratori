@@ -39,12 +39,12 @@ public class AdminGUI extends JFrame {
     private DefaultListModel<String> resListModel;
     private JButton addResBtn, deleteResBtn;
 
-    public AdminGUI(GestioneUtenti gestioneUtenti, GestioneLaboratori gestioneLaboratori,
-                    GestorePrenotazione gestorePrenotazione, Utente loggedUser) {
+    public AdminGUI(GestioneUtenti gestioneUtenti, GestioneLaboratori gestioneLaboratori, GestorePrenotazione gestorePrenotazione, Utente loggedUser) {
         this.gestioneUtenti = gestioneUtenti;
         this.gestioneLaboratori = gestioneLaboratori;
         this.gestorePrenotazione = gestorePrenotazione;
         this.loggedUser = loggedUser;
+
         initialize();
     }
 
@@ -141,23 +141,27 @@ public class AdminGUI extends JFrame {
                     .append(", Gestore: ").append(lab.getGestoreLab())
                     .append(", IP: ").append(lab.getIndirizzoIP()).append("\n");
         }
+
         sb.append("\nUtenti:\n");
         for (Utente u : gestioneUtenti.getUtentiCache()) {
             sb.append("Nome: ").append(u.getNome())
                     .append(", Pwd: ").append(u.getPassword())
                     .append(u.isAdmin() ? " (admin)" : "").append("\n");
         }
+
         sb.append("\nPrenotazioni:\n");
         for (Prenotazione p : gestorePrenotazione.getPrenotazioniNonScadute()) {
             sb.append("Lab: ").append(p.getLaboratorio())
                     .append(", Utente: ").append(p.getNomeUtente())
                     .append(", Orario: ").append(p.getOrario()).append("\n");
         }
+
         dashboardArea.setText(sb.toString());
     }
 
     private void refreshUserList() {
         userListModel.clear();
+
         for (Utente u : gestioneUtenti.getUtentiCache()) {
             userListModel.addElement(u.getNome() + " - " + u.getPassword() + (u.isAdmin() ? " (admin)" : ""));
         }
@@ -165,6 +169,7 @@ public class AdminGUI extends JFrame {
 
     private void refreshLabList() {
         labListModel.clear();
+
         for (Laboratorio lab : gestioneLaboratori.getLaboratoriCache()) {
             labListModel.addElement(lab.getNome() + " - Posti: " + lab.getQntPosti());
         }
@@ -172,6 +177,7 @@ public class AdminGUI extends JFrame {
 
     private void refreshResList() {
         resListModel.clear();
+
         for (Prenotazione p : gestorePrenotazione.getPrenotazioniNonScadute()) {
             resListModel.addElement("Lab: " + p.getLaboratorio() + ", Utente: " + p.getNomeUtente() + ", Orario: " + p.getOrario());
         }
@@ -188,20 +194,24 @@ public class AdminGUI extends JFrame {
     private void addUser() {
         String username = JOptionPane.showInputDialog(this, "Inserisci nuovo username:");
         if (username == null || username.trim().isEmpty()) return;
+
         String pwd = JOptionPane.showInputDialog(this, "Inserisci password:");
         if (pwd == null || pwd.trim().isEmpty()) return;
+
         int conf = JOptionPane.showConfirmDialog(this, "L'utente è admin?", "Ruolo", JOptionPane.YES_NO_OPTION);
         boolean isAdmin = (conf == JOptionPane.YES_OPTION);
         Utente nuovo = new Utente(username, pwd, isAdmin);
         gestioneUtenti.getUtentiCache().add(nuovo);
         gestioneUtenti.salvaUtente(nuovo, Main.BASE_PATH + File.separator + "utenti");
         JOptionPane.showMessageDialog(this, "Utente creato.\nNuova password: " + pwd);
+
         refreshUserList();
         refreshDashboard();
     }
 
     private void deleteSelectedUser() {
         int index = userList.getSelectedIndex();
+
         if (index >= 0) {
             gestioneUtenti.getUtentiCache().remove(index);
             refreshUserList();
@@ -213,9 +223,11 @@ public class AdminGUI extends JFrame {
 
     private void modifySelectedUserPwd() {
         int index = userList.getSelectedIndex();
+
         if (index >= 0) {
             Utente u = gestioneUtenti.getUtentiCache().get(index);
             String newPwd = JOptionPane.showInputDialog(this, "Inserisci nuova password per " + u.getNome() + ":");
+
             if (newPwd != null && !newPwd.trim().isEmpty()) {
                 Utente updated = new Utente(u.getNome(), newPwd, u.isAdmin());
                 gestioneUtenti.getUtentiCache().set(index, updated);
@@ -233,21 +245,26 @@ public class AdminGUI extends JFrame {
     private void addLab() {
         String nome = JOptionPane.showInputDialog(this, "Inserisci nome laboratorio:");
         if (nome == null || nome.trim().isEmpty()) return;
+
         String postiStr = JOptionPane.showInputDialog(this, "Inserisci quantità posti:");
         int posti = Integer.parseInt(postiStr);
+
         String gestore = JOptionPane.showInputDialog(this, "Inserisci gestore laboratorio:");
         String ip = JOptionPane.showInputDialog(this, "Inserisci indirizzo IP:");
         String subnet = JOptionPane.showInputDialog(this, "Inserisci Subnet Mask:");
         Laboratorio lab = new Laboratorio(nome, posti, gestore, 0, 0, 0, ip, subnet);
+
         gestioneLaboratori.getLaboratoriCache().add(lab);
         gestioneLaboratori.salvaLaboratorio(lab, Main.BASE_PATH + File.separator + "laboratori");
         JOptionPane.showMessageDialog(this, "Laboratorio creato.");
+
         refreshLabList();
         refreshDashboard();
     }
 
     private void deleteSelectedLab() {
         int index = labList.getSelectedIndex();
+
         if (index >= 0) {
             gestioneLaboratori.getLaboratoriCache().remove(index);
             refreshLabList();
@@ -261,20 +278,24 @@ public class AdminGUI extends JFrame {
     private void addReservation() {
         String labName = JOptionPane.showInputDialog(this, "Inserisci nome laboratorio per prenotazione:");
         String orario = JOptionPane.showInputDialog(this, "Inserisci orario (HH:mm-HH:mm):");
+
         if (labName == null || labName.trim().isEmpty() || orario == null || orario.trim().isEmpty() ||
                 !orario.matches("^([01]?\\d|2[0-3]):[0-5]\\d-([01]?\\d|2[0-3]):[0-5]\\d$")) {
             JOptionPane.showMessageDialog(this, "Verifica i campi per la prenotazione.");
             return;
         }
+
         Laboratorio lab = gestioneLaboratori.getLaboratorioByName(labName);
         if (lab == null) {
             JOptionPane.showMessageDialog(this, "Laboratorio non trovato.");
             return;
         }
+
         if (!gestorePrenotazione.puoiPrenotare(loggedUser, lab, orario)) {
             JOptionPane.showMessageDialog(this, "Prenotazione non possibile per conflitto.");
             return;
         }
+
         Prenotazione pren = new Prenotazione(loggedUser.getNome(), labName, orario, false);
         gestorePrenotazione.prenotaLaboratorio(pren, Main.BASE_PATH + File.separator + "prenotazioni");
         JOptionPane.showMessageDialog(this, "Prenotazione effettuata.");
@@ -285,7 +306,25 @@ public class AdminGUI extends JFrame {
     private void deleteSelectedReservation() {
         int index = resList.getSelectedIndex();
         if (index >= 0) {
-            // Per admin, eliminare la prenotazione selezionata (tra tutte)
+            // Ottiene l'oggetto Prenotazione corrispondente
+            Prenotazione pren = gestorePrenotazione.getPrenotazioniCache().get(index);
+
+            // Costruisce il nome del file associato alla prenotazione
+            String safeOrario = pren.getOrario().replace(":", "-");
+            String filePath = Main.BASE_PATH + File.separator + "prenotazioni"
+                    + File.separator + pren.getNomeUtente() + "-" + pren.getLaboratorio()
+                    + "-" + safeOrario + ".txt";
+
+            // Elimina il file se esiste
+            File file = new File(filePath);
+            if (file.exists()) {
+                if (!file.delete()) {
+                    JOptionPane.showMessageDialog(this, "Errore durante la cancellazione del file.");
+                    return;
+                }
+            }
+
+            // Rimuove la prenotazione dalla cache
             gestorePrenotazione.getPrenotazioniCache().remove(index);
             refreshResList();
             refreshDashboard();
