@@ -21,31 +21,32 @@ public class Main {
     public static final String BASE_PATH = getBasePath();
 
     public static void main(String[] args) {
-        // Crea le directory di base
         FileUtils.createDirs(BASE_PATH);
 
-        // Istanzia le classi di gestione
         GestioneUtenti gestioneUtenti = new GestioneUtenti();
         GestioneLaboratori gestioneLaboratori = new GestioneLaboratori();
         GestorePrenotazione gestorePrenotazione = new GestorePrenotazione();
 
-        // Carica i dati dai file
         gestioneUtenti.caricaUtenti(BASE_PATH + File.separator + "utenti");
         gestioneLaboratori.caricaLaboratori(BASE_PATH + File.separator + "laboratori");
         gestorePrenotazione.caricaPrenotazioni(BASE_PATH + File.separator + "prenotazioni");
 
-        // Avvia un job per controllare prenotazioni scadute ogni 5 minuti
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         scheduler.scheduleAtFixedRate(() -> {
             gestorePrenotazione.controllaPrenotazioniScadute();
         }, 0, 5, TimeUnit.MINUTES);
 
-        // Login tramite console
         Scanner sc = new Scanner(System.in);
         Utente loggedUser = null;
+
         if (gestioneUtenti.getUtentiCache().isEmpty() && gestioneLaboratori.getLaboratoriCache().isEmpty()) {
-            // Primo avvio: forzare l’uso dell’account admin
-            System.out.println("PRIMO AVVIO – Usa account admin: admin/admin123");
+            System.out.println("********************************************************************");
+            System.out.println("*-* SISTEMA GESTIONE DI LABORATORI *-*");
+            System.out.println("*-* QUESTO E UN PRIMO AVVIO *-*");
+            System.out.println("USARE ACCOUNT \"admin\" CON PASSWORD \"admin123\"");
+            System.out.println("PER CREARE UN LABORATORIO ED UTENTI");
+            System.out.println("********************************************************************");
+
             do {
                 System.out.print("Username: ");
                 String u = sc.nextLine();
@@ -59,14 +60,15 @@ public class Main {
                     System.out.println("Credenziali non valide. Riprova.");
                 }
             } while (loggedUser == null);
+
         } else {
-            // Avvio normale: mostra lista utenti e richiedi login
             System.out.println("Utenti disponibili:");
             int idx = 0;
             for (Utente u : gestioneUtenti.getUtentiCache()) {
                 System.out.println(idx + ". " + u.getNome());
                 idx++;
             }
+
             boolean loginOk = false;
             do {
                 System.out.print("Inserisci il tuo username: ");

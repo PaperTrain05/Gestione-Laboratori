@@ -1,13 +1,11 @@
 package it.paper.gestore_lab.manager;
 
-import it.paper.gestore_lab.Main;
 import it.paper.gestore_lab.object.Laboratorio;
 import it.paper.gestore_lab.utils.FileUtils;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 public class GestioneLaboratori {
     private List<Laboratorio> laboratoriCache = new ArrayList<>();
@@ -22,9 +20,10 @@ public class GestioneLaboratori {
             dir.mkdirs();
             return;
         }
+
         File[] files = dir.listFiles((d, name) -> name.endsWith(".txt"));
-        if (files == null)
-            return;
+        if (files == null) return;
+
         for (File f : files) {
             try (BufferedReader br = new BufferedReader(new FileReader(f))) {
                 String[] partsNome = br.readLine().split(":", 2);
@@ -51,55 +50,17 @@ public class GestioneLaboratori {
         }
     }
 
-    public void creaLaboratorio(Scanner sc) {
-        System.out.print("Inserisci nome laboratorio: ");
-        String nome = sc.nextLine();
-        System.out.print("Inserisci quantità posti: ");
-        int posti = Integer.parseInt(sc.nextLine());
-        System.out.print("Inserisci gestore laboratorio: ");
-        String gestore = sc.nextLine();
-        System.out.print("Inserisci quantità PC: ");
-        int pc = Integer.parseInt(sc.nextLine());
-        System.out.print("Inserisci quantità switch: ");
-        int sw = Integer.parseInt(sc.nextLine());
-        System.out.print("Inserisci quantità router: ");
-        int router = Integer.parseInt(sc.nextLine());
-
-        String ip;
-        while (true) {
-            System.out.print("Inserisci indirizzo IP: ");
-            ip = sc.nextLine();
-            if (FileUtils.validaIP(ip))
-                break;
-            else
-                System.out.println("Formato IP non valido.");
-        }
-        String subnet;
-        while (true) {
-            System.out.print("Inserisci subnet mask: ");
-            subnet = sc.nextLine();
-            if (FileUtils.validaIP(subnet))
-                break;
-            else
-                System.out.println("Formato subnet mask non valido.");
-        }
-
-        Laboratorio lab = new Laboratorio(nome, posti, gestore, pc, sw, router, ip, subnet);
-        laboratoriCache.add(lab);
-        salvaLaboratorio(lab, Main.BASE_PATH + File.separator + "laboratori");
-        System.out.println("Laboratorio creato.");
-    }
-
     public Laboratorio getLaboratorioByName(String nome) {
         for (Laboratorio lab : laboratoriCache) {
-            if (lab.getNome().equalsIgnoreCase(nome))
-                return lab;
+            if (lab.getNome().equalsIgnoreCase(nome)) return lab;
         }
+
         return null;
     }
 
     public void salvaLaboratorio(Laboratorio lab, String directoryPath) {
         String fileName = directoryPath + File.separator + lab.getNome() + ".txt";
+
         String content = "nome: " + lab.getNome() + "\n" +
                 "qnt_posti: " + lab.getQntPosti() + "\n" +
                 "gestore_lab: " + lab.getGestoreLab() + "\n" +
@@ -108,6 +69,7 @@ public class GestioneLaboratori {
                 "routers: " + lab.getRouters() + "\n" +
                 "ind_ip: " + lab.getIndirizzoIP() + "\n" +
                 "subnet_mask: " + lab.getSubnetMask();
+
         FileUtils.writeToFile(fileName, content);
     }
 }

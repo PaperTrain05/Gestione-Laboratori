@@ -1,13 +1,11 @@
 package it.paper.gestore_lab.manager;
 
-import it.paper.gestore_lab.Main;
 import it.paper.gestore_lab.object.Utente;
 import it.paper.gestore_lab.utils.FileUtils;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 public class GestioneUtenti {
     private List<Utente> utentiCache = new ArrayList<>();
@@ -22,9 +20,10 @@ public class GestioneUtenti {
             dir.mkdirs();
             return;
         }
+
         File[] files = dir.listFiles((d, name) -> name.endsWith(".txt"));
-        if (files == null)
-            return;
+        if (files == null) return;
+
         for (File f : files) {
             try (BufferedReader br = new BufferedReader(new FileReader(f))) {
                 String[] partsNome = br.readLine().split(":", 2);
@@ -41,33 +40,22 @@ public class GestioneUtenti {
         }
     }
 
-    public void creaUtente(Scanner sc) {
-        System.out.print("Inserisci nome utente: ");
-        String nome = sc.nextLine();
-        System.out.print("Inserisci password: ");
-        String password = sc.nextLine();
-        System.out.print("L'utente è admin? (True/False): ");
-        String adminStr = sc.nextLine();
-        boolean admin = adminStr.equalsIgnoreCase("True");
-        Utente nuovo = new Utente(nome, password, admin);
-        utentiCache.add(nuovo);
-        salvaUtente(nuovo, Main.BASE_PATH + File.separator + "utenti");
-        System.out.println("Utente creato.");
-    }
 
     public Utente getUtenteByName(String nome) {
         for (Utente u : utentiCache) {
-            if (u.getNome().equalsIgnoreCase(nome))
-                return u;
+            if (u.getNome().equalsIgnoreCase(nome)) return u;
         }
+
         return null;
     }
 
     public void salvaUtente(Utente utente, String directoryPath) {
         String fileName = directoryPath + File.separator + utente.getNome() + ".txt";
+
         String content = "nome: " + utente.getNome() + "\n" +
                 "password: " + utente.getPassword() + "\n" +
                 "admin: " + (utente.isAdmin() ? "True" : "False");
+
         FileUtils.writeToFile(fileName, content);
     }
 }

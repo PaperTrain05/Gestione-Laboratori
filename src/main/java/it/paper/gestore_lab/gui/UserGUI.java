@@ -33,8 +33,7 @@ public class UserGUI extends JFrame {
     private JList<String> prenList;
     private JButton deletePrenBtn;
 
-    public UserGUI(GestioneUtenti gestioneUtenti, GestioneLaboratori gestioneLaboratori,
-                   GestorePrenotazione gestorePrenotazione, Utente loggedUser) {
+    public UserGUI(GestioneUtenti gestioneUtenti, GestioneLaboratori gestioneLaboratori, GestorePrenotazione gestorePrenotazione, Utente loggedUser) {
         this.gestioneUtenti = gestioneUtenti;
         this.gestioneLaboratori = gestioneLaboratori;
         this.gestorePrenotazione = gestorePrenotazione;
@@ -99,6 +98,7 @@ public class UserGUI extends JFrame {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         panel.add(new JLabel(label));
         panel.add(comp);
+
         return panel;
     }
 
@@ -111,18 +111,21 @@ public class UserGUI extends JFrame {
                     .append(", Gestore: ").append(lab.getGestoreLab())
                     .append(", IP: ").append(lab.getIndirizzoIP()).append("\n");
         }
+
         sb.append("\n----- Prenotazioni -----\n");
         for (Prenotazione p : gestorePrenotazione.getPrenotazioniNonScadute()) {
             sb.append("Lab: ").append(p.getLaboratorio())
                     .append(", Utente: ").append(p.getNomeUtente())
                     .append(", Orario: ").append(p.getOrario()).append("\n");
         }
+
         dashboardArea.setText(sb.toString());
     }
 
     private void refreshUserPrenotations() {
         prenListModel.clear();
         List<Prenotazione> prenListAll = gestorePrenotazione.getPrenotazioniNonScadute();
+
         for (Prenotazione p : prenListAll) {
             if (p.getNomeUtente().equalsIgnoreCase(loggedUser.getNome())) {
                 prenListModel.addElement("Lab: " + p.getLaboratorio() + ", Orario: " + p.getOrario());
@@ -133,19 +136,23 @@ public class UserGUI extends JFrame {
     private void createPrenotazione() {
         String labName = labField.getText().trim();
         String orario = orarioField.getText().trim();
+
         if (labName.isEmpty() || orario.isEmpty() || !orario.matches("^([01]?\\d|2[0-3]):[0-5]\\d-([01]?\\d|2[0-3]):[0-5]\\d$")) {
             JOptionPane.showMessageDialog(this, "Verifica i campi per la prenotazione.");
             return;
         }
+
         Laboratorio lab = gestioneLaboratori.getLaboratorioByName(labName);
         if (lab == null) {
             JOptionPane.showMessageDialog(this, "Laboratorio non trovato.");
             return;
         }
+
         if (!gestorePrenotazione.puoiPrenotare(loggedUser, lab, orario)) {
             JOptionPane.showMessageDialog(this, "Prenotazione non possibile per conflitto.");
             return;
         }
+
         Prenotazione pren = new Prenotazione(loggedUser.getNome(), labName, orario, false);
         gestorePrenotazione.prenotaLaboratorio(pren, Main.BASE_PATH + File.separator + "prenotazioni");
         JOptionPane.showMessageDialog(this, "Prenotazione effettuata.");
@@ -157,13 +164,14 @@ public class UserGUI extends JFrame {
 
     private void deleteSelectedPren() {
         int sel = prenList.getSelectedIndex();
+
         if (sel >= 0) {
             // Ricava la lista delle prenotazioni dell'utente
             List<Prenotazione> userPren = new ArrayList<>();
             for (Prenotazione p : gestorePrenotazione.getPrenotazioniNonScadute()) {
-                if (p.getNomeUtente().equalsIgnoreCase(loggedUser.getNome()))
-                    userPren.add(p);
+                if (p.getNomeUtente().equalsIgnoreCase(loggedUser.getNome())) userPren.add(p);
             }
+
             if (sel < userPren.size()) {
                 gestorePrenotazione.getPrenotazioniCache().remove(userPren.get(sel));
 

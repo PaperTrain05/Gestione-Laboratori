@@ -305,6 +305,7 @@ public class AdminGUI extends JFrame {
 
     private void deleteSelectedReservation() {
         int index = resList.getSelectedIndex();
+
         if (index >= 0) {
             // Ottiene l'oggetto Prenotazione corrispondente
             Prenotazione pren = gestorePrenotazione.getPrenotazioniCache().get(index);

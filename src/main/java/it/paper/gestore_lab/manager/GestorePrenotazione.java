@@ -25,9 +25,10 @@ public class GestorePrenotazione {
             dir.mkdirs();
             return;
         }
+
         File[] files = dir.listFiles((d, name) -> name.endsWith(".txt"));
-        if (files == null)
-            return;
+        if (files == null) return;
+
         for (File f : files) {
             try (BufferedReader br = new BufferedReader(new FileReader(f))) {
                 String[] partsNome = br.readLine().split(":", 2);
@@ -49,16 +50,17 @@ public class GestorePrenotazione {
     public boolean puoiPrenotare(Utente utente, Laboratorio lab, String orario) {
         LocalTime nuovoInizio = getInizio(orario);
         LocalTime nuovoFine = getFine(orario);
+
         for (Prenotazione p : prenotazioniCache) {
             if (p.getLaboratorio().equalsIgnoreCase(lab.getNome()) && !p.isScaduto()) {
-                if (overlap(nuovoInizio, nuovoFine, p.getOrarioInizio(), p.getOrarioFine()))
-                    return false;
+                if (overlap(nuovoInizio, nuovoFine, p.getOrarioInizio(), p.getOrarioFine())) return false;
             }
+
             if (p.getNomeUtente().equalsIgnoreCase(utente.getNome()) && !p.isScaduto()) {
-                if (overlap(nuovoInizio, nuovoFine, p.getOrarioInizio(), p.getOrarioFine()))
-                    return false;
+                if (overlap(nuovoInizio, nuovoFine, p.getOrarioInizio(), p.getOrarioFine())) return false;
             }
         }
+
         return true;
     }
 
@@ -69,12 +71,14 @@ public class GestorePrenotazione {
     private LocalTime getInizio(String orario) {
         String[] parts = orario.split("-");
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+
         return LocalTime.parse(parts[0].trim(), formatter);
     }
 
     private LocalTime getFine(String orario) {
         String[] parts = orario.split("-");
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+
         return LocalTime.parse(parts[1].trim(), formatter);
     }
 
@@ -85,48 +89,43 @@ public class GestorePrenotazione {
 
     public void salvaPrenotazione(Prenotazione pren, String directoryPath) {
         String safeOrario = pren.getOrario().replace(":", "-");
+
         String fileName = directoryPath + File.separator + pren.getNomeUtente()
                 + "-" + pren.getLaboratorio() + "-" + safeOrario + ".txt";
+
         String content = "nome: " + pren.getNomeUtente() + "\n" +
                 "laboratorio: " + pren.getLaboratorio() + "\n" +
                 "orario: " + pren.getOrario() + "\n" +
                 "scaduto: " + (pren.isScaduto() ? "True" : "False");
+
         FileUtils.writeToFile(fileName, content);
     }
 
     public List<Prenotazione> getPrenotazioniNonScadute() {
         List<Prenotazione> ris = new ArrayList<>();
+
         for (Prenotazione p : prenotazioniCache) {
-            if (!p.isScaduto())
-                ris.add(p);
+            if (!p.isScaduto()) ris.add(p);
         }
+
         return ris;
     }
 
     public boolean isPrenotato(Laboratorio lab) {
         LocalTime now = LocalTime.now();
-        for (Prenotazione p : prenotazioniCache) {
-            if (p.getLaboratorio().equalsIgnoreCase(lab.getNome()) && !p.isScaduto()) {
-                if (now.isAfter(p.getOrarioInizio()) && now.isBefore(p.getOrarioFine()))
-                    return true;
-            }
-        }
-        return false;
-    }
 
-    public Prenotazione getPrenotazioneAttiva(Laboratorio lab) {
-        LocalTime now = LocalTime.now();
         for (Prenotazione p : prenotazioniCache) {
             if (p.getLaboratorio().equalsIgnoreCase(lab.getNome()) && !p.isScaduto()) {
-                if (now.isAfter(p.getOrarioInizio()) && now.isBefore(p.getOrarioFine()))
-                    return p;
+                if (now.isAfter(p.getOrarioInizio()) && now.isBefore(p.getOrarioFine())) return true;
             }
         }
-        return null;
+
+        return false;
     }
 
     public void controllaPrenotazioniScadute() {
         LocalTime now = LocalTime.now();
+
         for (Prenotazione p : prenotazioniCache) {
             if (!p.isScaduto() && now.isAfter(p.getOrarioFine())) {
                 p.setScaduto(true);

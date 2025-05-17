@@ -55,12 +55,13 @@ public class Prenotazione {
     }
 
     public LocalTime getOrarioFine() {
-        if (orario == null || orario.trim().isEmpty())
-            throw new IllegalArgumentException("L'orario non può essere vuoto.");
+        if (orario == null || orario.trim().isEmpty()) throw new IllegalArgumentException("L'orario non può essere vuoto.");
+
         String[] parts = orario.split("-");
-        if (parts.length < 2)
-            throw new IllegalArgumentException("Formato orario non valido. Deve essere HH:mm-HH:mm.");
+
+        if (parts.length < 2) throw new IllegalArgumentException("Formato orario non valido. Deve essere HH:mm-HH:mm.");
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+
         try {
             return LocalTime.parse(parts[1].trim(), formatter);
         } catch (DateTimeParseException e) {
