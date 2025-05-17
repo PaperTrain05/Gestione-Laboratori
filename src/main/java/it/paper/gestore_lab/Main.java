@@ -1,41 +1,103 @@
 package it.paper.gestore_lab;
 
+import it.paper.gestore_lab.gui.AdminGUI;
+import it.paper.gestore_lab.gui.UserGUI;
 import it.paper.gestore_lab.manager.GestioneLaboratori;
 import it.paper.gestore_lab.manager.GestioneUtenti;
-import it.paper.gestore_lab.manager.GestoreAvvio;
 import it.paper.gestore_lab.manager.GestorePrenotazione;
+import it.paper.gestore_lab.object.Utente;
 import it.paper.gestore_lab.utils.FileUtils;
 
 import java.io.File;
+import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class Main {
+import javax.swing.SwingUtilities;
 
+
+public class Main {
     public static final String BASE_PATH = getBasePath();
 
     public static void main(String[] args) {
-        // Crea le cartelle necessarie
+        // Crea le directory di base
         FileUtils.createDirs(BASE_PATH);
 
-        // Carica utenti, laboratori e prenotazioni in cache dai file
-        GestioneUtenti.caricaUtenti(BASE_PATH + File.separator + "utenti");
-        GestioneLaboratori.caricaLaboratori(BASE_PATH + File.separator + "laboratori");
-        GestorePrenotazione.caricaPrenotazioni(BASE_PATH + File.separator + "prenotazioni");
+        // Istanzia le classi di gestione
+        GestioneUtenti gestioneUtenti = new GestioneUtenti();
+        GestioneLaboratori gestioneLaboratori = new GestioneLaboratori();
+        GestorePrenotazione gestorePrenotazione = new GestorePrenotazione();
 
-        // Avvia un job schedulato per controllare le prenotazioni scadute ogni 5 minuti
+        // Carica i dati dai file
+        gestioneUtenti.caricaUtenti(BASE_PATH + File.separator + "utenti");
+        gestioneLaboratori.caricaLaboratori(BASE_PATH + File.separator + "laboratori");
+        gestorePrenotazione.caricaPrenotazioni(BASE_PATH + File.separator + "prenotazioni");
+
+        // Avvia un job per controllare prenotazioni scadute ogni 5 minuti
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         scheduler.scheduleAtFixedRate(() -> {
-            GestorePrenotazione.controllaPrenotazioniScadute();
+            gestorePrenotazione.controllaPrenotazioniScadute();
         }, 0, 5, TimeUnit.MINUTES);
 
-        // Se non esistono utenti e laboratori, è il primo avvio
-        if (GestioneUtenti.utentiCache.isEmpty() && GestioneLaboratori.laboratoriCache.isEmpty()) {
-            GestoreAvvio.avvioPrimaEsecuzione();
+        // Login tramite console
+        Scanner sc = new Scanner(System.in);
+        Utente loggedUser = null;
+        if (gestioneUtenti.getUtentiCache().isEmpty() && gestioneLaboratori.getLaboratoriCache().isEmpty()) {
+            // Primo avvio: forzare l’uso dell’account admin
+            System.out.println("PRIMO AVVIO – Usa account admin: admin/admin123");
+            do {
+                System.out.print("Username: ");
+                String u = sc.nextLine();
+                System.out.print("Password: ");
+                String p = sc.nextLine();
+                if (u.equals("admin") && p.equals("admin123")) {
+                    loggedUser = new Utente("admin", "admin123", true);
+                    gestioneUtenti.getUtentiCache().add(loggedUser);
+                    gestioneUtenti.salvaUtente(loggedUser, BASE_PATH + File.separator + "utenti");
+                } else {
+                    System.out.println("Credenziali non valide. Riprova.");
+                }
+            } while (loggedUser == null);
         } else {
-            GestoreAvvio.avvioNormale();
+            // Avvio normale: mostra lista utenti e richiedi login
+            System.out.println("Utenti disponibili:");
+            int idx = 0;
+            for (Utente u : gestioneUtenti.getUtentiCache()) {
+                System.out.println(idx + ". " + u.getNome());
+                idx++;
+            }
+            boolean loginOk = false;
+            do {
+                System.out.print("Inserisci il tuo username: ");
+                String u = sc.nextLine();
+                System.out.print("Inserisci la password: ");
+                String p = sc.nextLine();
+                Utente user = gestioneUtenti.getUtenteByName(u);
+                if (user != null && user.getPassword().equals(p)) {
+                    loggedUser = user;
+                    loginOk = true;
+                } else {
+                    System.out.println("Credenziali errate. Riprova.");
+                }
+            } while (!loginOk);
         }
+        sc.close();
+
+        final Utente finalUser = loggedUser; // variabile final per lambda
+
+        // Avvia la GUI in base al ruolo (finestra 500x500)
+        SwingUtilities.invokeLater(() -> {
+            if (finalUser.isAdmin()) {
+                AdminGUI adminGui = new AdminGUI(gestioneUtenti, gestioneLaboratori, gestorePrenotazione, finalUser);
+                adminGui.setSize(500, 500);
+                adminGui.setVisible(true);
+            } else {
+                UserGUI userGui = new UserGUI(gestioneUtenti, gestioneLaboratori, gestorePrenotazione, finalUser);
+                userGui.setSize(500, 500);
+                userGui.setVisible(true);
+            }
+        });
     }
 
     private static String getBasePath() {

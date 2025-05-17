@@ -13,18 +13,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GestorePrenotazione {
-    public static List<Prenotazione> prenotazioniCache = new ArrayList<>();
+    private List<Prenotazione> prenotazioniCache = new ArrayList<>();
 
-    public static void caricaPrenotazioni(String directoryPath) {
+    public List<Prenotazione> getPrenotazioniCache() {
+        return prenotazioniCache;
+    }
+
+    public void caricaPrenotazioni(String directoryPath) {
         File dir = new File(directoryPath);
         if (!dir.exists()) {
             dir.mkdirs();
             return;
         }
-
         File[] files = dir.listFiles((d, name) -> name.endsWith(".txt"));
-        if (files == null) return;
-
+        if (files == null)
+            return;
         for (File f : files) {
             try (BufferedReader br = new BufferedReader(new FileReader(f))) {
                 String[] partsNome = br.readLine().split(":", 2);
@@ -43,10 +46,9 @@ public class GestorePrenotazione {
         }
     }
 
-    public static boolean puoiPrenotare(Utente utente, Laboratorio lab, String orario) {
+    public boolean puoiPrenotare(Utente utente, Laboratorio lab, String orario) {
         LocalTime nuovoInizio = getInizio(orario);
         LocalTime nuovoFine = getFine(orario);
-
         for (Prenotazione p : prenotazioniCache) {
             if (p.getLaboratorio().equalsIgnoreCase(lab.getNome()) && !p.isScaduto()) {
                 if (overlap(nuovoInizio, nuovoFine, p.getOrarioInizio(), p.getOrarioFine()))
@@ -57,88 +59,74 @@ public class GestorePrenotazione {
                     return false;
             }
         }
-
         return true;
     }
 
-    private static boolean overlap(LocalTime start1, LocalTime end1, LocalTime start2, LocalTime end2) {
+    private boolean overlap(LocalTime start1, LocalTime end1, LocalTime start2, LocalTime end2) {
         return start1.isBefore(end2) && start2.isBefore(end1);
     }
 
-    private static LocalTime getInizio(String orario) {
-        // Usa lo split semplice perché l'orario passato è validato
+    private LocalTime getInizio(String orario) {
         String[] parts = orario.split("-");
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-
         return LocalTime.parse(parts[0].trim(), formatter);
     }
 
-    private static LocalTime getFine(String orario) {
+    private LocalTime getFine(String orario) {
         String[] parts = orario.split("-");
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-
         return LocalTime.parse(parts[1].trim(), formatter);
     }
 
-    public static void prenotaLaboratorio(Prenotazione pren) {
+    public void prenotaLaboratorio(Prenotazione pren, String directoryPath) {
         prenotazioniCache.add(pren);
-        salvaPrenotazione(pren, Main.BASE_PATH + File.separator + "prenotazioni");
+        salvaPrenotazione(pren, directoryPath);
     }
 
-    public static void salvaPrenotazione(Prenotazione pren, String directoryPath) {
-        // Sostituisce i ":" nell'orario per creare un nome file valido
+    public void salvaPrenotazione(Prenotazione pren, String directoryPath) {
         String safeOrario = pren.getOrario().replace(":", "-");
-        String fileName = directoryPath + File.separator + pren.getNomeUtente() + "-" + pren.getLaboratorio() + "-" + safeOrario + ".txt";
+        String fileName = directoryPath + File.separator + pren.getNomeUtente()
+                + "-" + pren.getLaboratorio() + "-" + safeOrario + ".txt";
         String content = "nome: " + pren.getNomeUtente() + "\n" +
                 "laboratorio: " + pren.getLaboratorio() + "\n" +
                 "orario: " + pren.getOrario() + "\n" +
                 "scaduto: " + (pren.isScaduto() ? "True" : "False");
-
         FileUtils.writeToFile(fileName, content);
     }
 
-    public static List<Prenotazione> getPrenotazioniNonScadute() {
+    public List<Prenotazione> getPrenotazioniNonScadute() {
         List<Prenotazione> ris = new ArrayList<>();
-
         for (Prenotazione p : prenotazioniCache) {
             if (!p.isScaduto())
                 ris.add(p);
         }
-
         return ris;
     }
 
-    public static boolean isPrenotato(Laboratorio lab) {
+    public boolean isPrenotato(Laboratorio lab) {
         LocalTime now = LocalTime.now();
-
         for (Prenotazione p : prenotazioniCache) {
             if (p.getLaboratorio().equalsIgnoreCase(lab.getNome()) && !p.isScaduto()) {
-                if (now.isAfter(p.getOrarioInizio()) && now.isBefore(p.getOrarioFine())) {
+                if (now.isAfter(p.getOrarioInizio()) && now.isBefore(p.getOrarioFine()))
                     return true;
-                }
             }
         }
-
         return false;
     }
 
-    public static Prenotazione getPrenotazioneAttiva(Laboratorio lab) {
+    public Prenotazione getPrenotazioneAttiva(Laboratorio lab) {
         LocalTime now = LocalTime.now();
-
         for (Prenotazione p : prenotazioniCache) {
             if (p.getLaboratorio().equalsIgnoreCase(lab.getNome()) && !p.isScaduto()) {
-                if (now.isAfter(p.getOrarioInizio()) && now.isBefore(p.getOrarioFine())) {
+                if (now.isAfter(p.getOrarioInizio()) && now.isBefore(p.getOrarioFine()))
                     return p;
-                }
             }
         }
-
         return null;
     }
 
-    public static void controllaPrenotazioniScadute() {
+    public void controllaPrenotazioniScadute() {
         LocalTime now = LocalTime.now();
-
         for (Prenotazione p : prenotazioniCache) {
             if (!p.isScaduto() && now.isAfter(p.getOrarioFine())) {
                 p.setScaduto(true);

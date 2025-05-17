@@ -37,24 +37,16 @@ public class Prenotazione {
         this.scaduto = scaduto;
     }
 
-    // Restituisce l'orario di inizio come LocalTime
     public LocalTime getOrarioInizio() {
-        if (orario == null || orario.trim().isEmpty()) {
+        if (orario == null || orario.trim().isEmpty())
             throw new IllegalArgumentException("L'orario non può essere vuoto.");
-        }
-
         String[] parts = orario.split("-");
-        if (parts.length < 2) {
-            throw new IllegalArgumentException("Formato orario non valido. Deve essere nel formato HH:mm-HH:mm.");
-        }
-
+        if (parts.length < 2)
+            throw new IllegalArgumentException("Formato orario non valido. Deve essere HH:mm-HH:mm.");
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
         String inizio = parts[0].trim();
-
-        if (!inizio.contains(":") && inizio.length() <= 2) {
+        if (!inizio.contains(":") && inizio.length() <= 2)
             inizio = inizio + ":00";
-        }
-
         try {
             return LocalTime.parse(inizio, formatter);
         } catch (DateTimeParseException e) {
@@ -62,17 +54,12 @@ public class Prenotazione {
         }
     }
 
-    // Restituisce l'orario di fine come LocalTime
     public LocalTime getOrarioFine() {
-        if (orario == null || orario.trim().isEmpty()) {
+        if (orario == null || orario.trim().isEmpty())
             throw new IllegalArgumentException("L'orario non può essere vuoto.");
-        }
-
         String[] parts = orario.split("-");
-        if (parts.length < 2) {
-            throw new IllegalArgumentException("Formato orario non valido. Deve essere nel formato HH:mm-HH:mm.");
-        }
-
+        if (parts.length < 2)
+            throw new IllegalArgumentException("Formato orario non valido. Deve essere HH:mm-HH:mm.");
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
         try {
             return LocalTime.parse(parts[1].trim(), formatter);

@@ -10,18 +10,21 @@ import java.util.List;
 import java.util.Scanner;
 
 public class GestioneLaboratori {
-    public static List<Laboratorio> laboratoriCache = new ArrayList<>();
+    private List<Laboratorio> laboratoriCache = new ArrayList<>();
 
-    public static void caricaLaboratori(String directoryPath) {
+    public List<Laboratorio> getLaboratoriCache() {
+        return laboratoriCache;
+    }
+
+    public void caricaLaboratori(String directoryPath) {
         File dir = new File(directoryPath);
         if (!dir.exists()) {
             dir.mkdirs();
             return;
         }
-
         File[] files = dir.listFiles((d, name) -> name.endsWith(".txt"));
-        if (files == null) return;
-
+        if (files == null)
+            return;
         for (File f : files) {
             try (BufferedReader br = new BufferedReader(new FileReader(f))) {
                 String[] partsNome = br.readLine().split(":", 2);
@@ -48,8 +51,7 @@ public class GestioneLaboratori {
         }
     }
 
-    public static void creaLaboratorio() {
-        Scanner sc = new Scanner(System.in);
+    public void creaLaboratorio(Scanner sc) {
         System.out.print("Inserisci nome laboratorio: ");
         String nome = sc.nextLine();
         System.out.print("Inserisci quantità posti: ");
@@ -72,7 +74,6 @@ public class GestioneLaboratori {
             else
                 System.out.println("Formato IP non valido.");
         }
-
         String subnet;
         while (true) {
             System.out.print("Inserisci subnet mask: ");
@@ -89,16 +90,15 @@ public class GestioneLaboratori {
         System.out.println("Laboratorio creato.");
     }
 
-    public static Laboratorio getLaboratorioByName(String nome) {
+    public Laboratorio getLaboratorioByName(String nome) {
         for (Laboratorio lab : laboratoriCache) {
             if (lab.getNome().equalsIgnoreCase(nome))
                 return lab;
         }
-
         return null;
     }
 
-    public static void salvaLaboratorio(Laboratorio lab, String directoryPath) {
+    public void salvaLaboratorio(Laboratorio lab, String directoryPath) {
         String fileName = directoryPath + File.separator + lab.getNome() + ".txt";
         String content = "nome: " + lab.getNome() + "\n" +
                 "qnt_posti: " + lab.getQntPosti() + "\n" +
@@ -108,7 +108,6 @@ public class GestioneLaboratori {
                 "routers: " + lab.getRouters() + "\n" +
                 "ind_ip: " + lab.getIndirizzoIP() + "\n" +
                 "subnet_mask: " + lab.getSubnetMask();
-
         FileUtils.writeToFile(fileName, content);
     }
 }

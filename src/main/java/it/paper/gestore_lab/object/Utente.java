@@ -1,9 +1,9 @@
 package it.paper.gestore_lab.object;
 
 public class Utente {
-    private final String nome;
-    private final String password;
-    private final boolean admin;
+    private String nome;
+    private String password;
+    private boolean admin;
 
     public Utente(String nome, String password, boolean admin) {
         this.nome = nome;

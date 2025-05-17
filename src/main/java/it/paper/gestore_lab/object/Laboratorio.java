@@ -1,14 +1,14 @@
 package it.paper.gestore_lab.object;
 
 public class Laboratorio {
-    private final String nome;
-    private final int qntPosti;
-    private final String gestoreLab;
-    private final int quantitaPC;
-    private final int switches;
-    private final int routers;
-    private final String indirizzoIP;
-    private final String subnetMask;
+    private String nome;
+    private int qntPosti;
+    private String gestoreLab;
+    private int quantitaPC;
+    private int switches;
+    private int routers;
+    private String indirizzoIP;
+    private String subnetMask;
 
     public Laboratorio(String nome, int qntPosti, String gestoreLab, int quantitaPC, int switches, int routers, String indirizzoIP, String subnetMask) {
         this.nome = nome;
@@ -55,6 +55,6 @@ public class Laboratorio {
 
     @Override
     public String toString() {
-        return nome + ", posti: " + qntPosti + ", IP: " + indirizzoIP;
+        return nome + ", posti:" + qntPosti + ", IP:" + indirizzoIP;
     }
 }

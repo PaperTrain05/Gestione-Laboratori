@@ -10,16 +10,21 @@ import java.util.List;
 import java.util.Scanner;
 
 public class GestioneUtenti {
-    public static List<Utente> utentiCache = new ArrayList<>();
+    private List<Utente> utentiCache = new ArrayList<>();
 
-    public static void caricaUtenti(String directoryPath) {
+    public List<Utente> getUtentiCache() {
+        return utentiCache;
+    }
+
+    public void caricaUtenti(String directoryPath) {
         File dir = new File(directoryPath);
         if (!dir.exists()) {
             dir.mkdirs();
             return;
         }
         File[] files = dir.listFiles((d, name) -> name.endsWith(".txt"));
-        if (files == null) return;
+        if (files == null)
+            return;
         for (File f : files) {
             try (BufferedReader br = new BufferedReader(new FileReader(f))) {
                 String[] partsNome = br.readLine().split(":", 2);
@@ -36,8 +41,7 @@ public class GestioneUtenti {
         }
     }
 
-    public static void creaUtente() {
-        Scanner sc = new Scanner(System.in);
+    public void creaUtente(Scanner sc) {
         System.out.print("Inserisci nome utente: ");
         String nome = sc.nextLine();
         System.out.print("Inserisci password: ");
@@ -51,7 +55,7 @@ public class GestioneUtenti {
         System.out.println("Utente creato.");
     }
 
-    public static Utente getUtenteByName(String nome) {
+    public Utente getUtenteByName(String nome) {
         for (Utente u : utentiCache) {
             if (u.getNome().equalsIgnoreCase(nome))
                 return u;
@@ -59,7 +63,7 @@ public class GestioneUtenti {
         return null;
     }
 
-    public static void salvaUtente(Utente utente, String directoryPath) {
+    public void salvaUtente(Utente utente, String directoryPath) {
         String fileName = directoryPath + File.separator + utente.getNome() + ".txt";
         String content = "nome: " + utente.getNome() + "\n" +
                 "password: " + utente.getPassword() + "\n" +

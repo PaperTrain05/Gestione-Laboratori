@@ -4,7 +4,6 @@ import java.io.*;
 
 public class FileUtils {
 
-    // Metodo generico per scrivere una stringa su file
     public static void writeToFile(String filePath, String content) {
         try (PrintWriter pw = new PrintWriter(new FileWriter(filePath))) {
             pw.write(content);
@@ -13,11 +12,10 @@ public class FileUtils {
         }
     }
 
-    // Controlla che l'IP abbia quattro gruppi numerici tra 0 e 255
     public static boolean validaIP(String ip) {
         String[] parts = ip.split("\\.");
-        if (parts.length != 4) return false;
-
+        if (parts.length != 4)
+            return false;
         try {
             for (String s : parts) {
                 int num = Integer.parseInt(s);
@@ -27,11 +25,9 @@ public class FileUtils {
         } catch (NumberFormatException e) {
             return false;
         }
-
         return true;
     }
 
-    // Crea le cartelle per utenti, laboratori e prenotazioni
     public static void createDirs(String basePath) {
         new File(basePath + File.separator + "utenti").mkdirs();
         new File(basePath + File.separator + "laboratori").mkdirs();
