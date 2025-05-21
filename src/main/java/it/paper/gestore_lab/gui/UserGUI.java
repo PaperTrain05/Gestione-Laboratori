@@ -3,6 +3,7 @@ package it.paper.gestore_lab.gui;
 import it.paper.gestore_lab.Main;
 import it.paper.gestore_lab.manager.GestioneLaboratori;
 import it.paper.gestore_lab.manager.GestioneUtenti;
+import it.paper.gestore_lab.manager.GestoreLog;
 import it.paper.gestore_lab.manager.GestorePrenotazione;
 import it.paper.gestore_lab.object.Laboratorio;
 import it.paper.gestore_lab.object.Prenotazione;
@@ -160,6 +161,8 @@ public class UserGUI extends JFrame {
         orarioField.setText("");
         refreshDashboard();
         refreshUserPrenotations();
+
+        GestoreLog.logAction(loggedUser.getNome(), "Ha creato una prenotazione: " + labName + " - " + orario);
     }
 
     private void deleteSelectedPren() {
@@ -193,6 +196,8 @@ public class UserGUI extends JFrame {
 
                 refreshUserPrenotations();
                 refreshDashboard();
+
+                GestoreLog.logAction(loggedUser.getNome(), "Ha eliminato una prenotazione: " + pren.getLaboratorio() + " - " + safeOrario);
             }
         } else {
             JOptionPane.showMessageDialog(this, "Seleziona una prenotazione da eliminare.");

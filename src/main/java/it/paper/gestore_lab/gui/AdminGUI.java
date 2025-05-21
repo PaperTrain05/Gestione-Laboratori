@@ -3,6 +3,7 @@ package it.paper.gestore_lab.gui;
 import it.paper.gestore_lab.Main;
 import it.paper.gestore_lab.manager.GestioneLaboratori;
 import it.paper.gestore_lab.manager.GestioneUtenti;
+import it.paper.gestore_lab.manager.GestoreLog;
 import it.paper.gestore_lab.manager.GestorePrenotazione;
 import it.paper.gestore_lab.object.Laboratorio;
 import it.paper.gestore_lab.object.Prenotazione;
@@ -205,6 +206,8 @@ public class AdminGUI extends JFrame {
         gestioneUtenti.salvaUtente(nuovo, Main.BASE_PATH + File.separator + "utenti");
         JOptionPane.showMessageDialog(this, "Utente creato.\nNuova password: " + pwd);
 
+        GestoreLog.logAction(loggedUser.getNome(), "Ha creato un utente: " + nuovo.getNome() + " con password " + nuovo.getPassword());
+
         refreshUserList();
         refreshDashboard();
     }
@@ -218,9 +221,12 @@ public class AdminGUI extends JFrame {
         }
 
         if (index >= 0) {
+            GestoreLog.logAction(loggedUser.getNome(), "Ha eliminato un utente: " + gestioneUtenti.getUtentiCache().get(index).getNome());
+
             gestioneUtenti.getUtentiCache().remove(index);
             refreshUserList();
             refreshDashboard();
+
         } else {
             JOptionPane.showMessageDialog(this, "Seleziona un utente da eliminare.");
         }
@@ -238,6 +244,9 @@ public class AdminGUI extends JFrame {
                 gestioneUtenti.getUtentiCache().set(index, updated);
                 gestioneUtenti.salvaUtente(updated, Main.BASE_PATH + File.separator + "utenti");
                 JOptionPane.showMessageDialog(this, "Password modificata.\nNuova password: " + newPwd);
+
+                GestoreLog.logAction(loggedUser.getNome(), "Ha modificato la password per l'utente: " + updated.getNome() + " con password nuovo: " + updated.getPassword());
+
                 refreshUserList();
                 refreshDashboard();
             }
@@ -263,6 +272,8 @@ public class AdminGUI extends JFrame {
         gestioneLaboratori.salvaLaboratorio(lab, Main.BASE_PATH + File.separator + "laboratori");
         JOptionPane.showMessageDialog(this, "Laboratorio creato.");
 
+        GestoreLog.logAction(loggedUser.getNome(), "Ha aggiunto un nuovo laboratorio con nome: " + nome + ", con posti: " + posti + ", indirizzo IP: " + ip + ", con subnetmask: " + subnet);
+
         refreshLabList();
         refreshDashboard();
     }
@@ -271,6 +282,8 @@ public class AdminGUI extends JFrame {
         int index = labList.getSelectedIndex();
 
         if (index >= 0) {
+            GestoreLog.logAction(loggedUser.getNome(), "Ha eliminato un laboratorio con nome: " + gestioneLaboratori.getLaboratoriCache().get(index) + ", con posti: " + gestioneLaboratori.getLaboratoriCache().get(index) + ", indirizzo IP: " + gestioneLaboratori.getLaboratoriCache().get(index) + ", con subnetmask: " + gestioneLaboratori.getLaboratoriCache().get(index));
+
             gestioneLaboratori.getLaboratoriCache().remove(index);
             refreshLabList();
             refreshDashboard();
@@ -284,8 +297,7 @@ public class AdminGUI extends JFrame {
         String labName = JOptionPane.showInputDialog(this, "Inserisci nome laboratorio per prenotazione:");
         String orario = JOptionPane.showInputDialog(this, "Inserisci orario (HH:mm-HH:mm):");
 
-        if (labName == null || labName.trim().isEmpty() || orario == null || orario.trim().isEmpty() ||
-                !orario.matches("^([01]?\\d|2[0-3]):[0-5]\\d-([01]?\\d|2[0-3]):[0-5]\\d$")) {
+        if (labName == null || labName.trim().isEmpty() || orario == null || orario.trim().isEmpty() || !orario.matches("^([01]?\\d|2[0-3]):[0-5]\\d-([01]?\\d|2[0-3]):[0-5]\\d$")) {
             JOptionPane.showMessageDialog(this, "Verifica i campi per la prenotazione.");
             return;
         }
@@ -304,6 +316,9 @@ public class AdminGUI extends JFrame {
         Prenotazione pren = new Prenotazione(loggedUser.getNome(), labName, orario, false);
         gestorePrenotazione.prenotaLaboratorio(pren, Main.BASE_PATH + File.separator + "prenotazioni");
         JOptionPane.showMessageDialog(this, "Prenotazione effettuata.");
+
+        GestoreLog.logAction(loggedUser.getNome(), "Ha effettuato una prenotazione con: " + pren.getNomeUtente() + ", nel laboratorio: " + labName + ", con orario: " + orario);
+
         refreshResList();
         refreshDashboard();
     }
@@ -329,6 +344,8 @@ public class AdminGUI extends JFrame {
                     return;
                 }
             }
+
+            GestoreLog.logAction(loggedUser.getNome(), "Ha eliminato una prenotazione con nome utente: " + gestorePrenotazione.getPrenotazioniCache().get(index).getNomeUtente() + ", al laboratorio: " + gestorePrenotazione.getPrenotazioniCache().get(index).getLaboratorio() + ", con orario: " + gestorePrenotazione.getPrenotazioniCache().get(index).getOrario());
 
             // Rimuove la prenotazione dalla cache
             gestorePrenotazione.getPrenotazioniCache().remove(index);
