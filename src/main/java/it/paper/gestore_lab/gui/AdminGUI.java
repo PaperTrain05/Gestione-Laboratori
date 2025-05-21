@@ -11,7 +11,14 @@ import it.paper.gestore_lab.object.Utente;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AdminGUI extends JFrame {
 
@@ -39,6 +46,16 @@ public class AdminGUI extends JFrame {
     private JList<String> resList;
     private DefaultListModel<String> resListModel;
     private JButton addResBtn, deleteResBtn;
+
+    // Log
+    private DefaultListModel<String> logListModel;
+    private JList<String> logList;
+    private JTextArea logTextArea;
+    private JButton prevLogBtn, nextLogBtn;
+    private JTextField searchField;
+    private JButton searchBtn;
+    private List<File> logFiles;
+    private int currentLogIndex;
 
     public AdminGUI(GestioneUtenti gestioneUtenti, GestioneLaboratori gestioneLaboratori, GestorePrenotazione gestorePrenotazione, Utente loggedUser) {
         this.gestioneUtenti = gestioneUtenti;
@@ -69,6 +86,63 @@ public class AdminGUI extends JFrame {
 
         // Gestione Tab
         gestioneTabs = new JTabbedPane();
+
+        // Logs Panel
+        JPanel logPanel = new JPanel(new BorderLayout());
+
+        // Lista Log
+        logListModel = new DefaultListModel<>();
+        logList = new JList<>(logListModel);
+        logList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        logList.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent evt) {
+                if (evt.getClickCount() == 2) {
+                    int selectedIndex = logList.getSelectedIndex();
+                    if (selectedIndex >= 0) {
+                        currentLogIndex = selectedIndex;
+                        loadLogContent(logFiles.get(currentLogIndex));
+                    }
+                }
+            }
+        });
+        logPanel.add(new JScrollPane(logList), BorderLayout.WEST);
+
+        // Area di testo per il contenuto del log
+        logTextArea = new JTextArea();
+        logTextArea.setEditable(false);
+        logPanel.add(new JScrollPane(logTextArea), BorderLayout.CENTER);
+
+        // Barra di controllo superiore (freccette e ricerca)
+        JPanel controlPanel = new JPanel(new BorderLayout());
+
+        // Freccette per navigazione
+        JPanel navPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        prevLogBtn = new JButton("⬅");
+        nextLogBtn = new JButton("➡");
+        prevLogBtn.addActionListener(e -> navigateLog(-1));
+        nextLogBtn.addActionListener(e -> navigateLog(1));
+        navPanel.add(prevLogBtn);
+        navPanel.add(nextLogBtn);
+        controlPanel.add(navPanel, BorderLayout.WEST);
+
+        // Campo di ricerca
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        searchField = new JTextField(15);
+        searchBtn = new JButton("Cerca");
+        searchBtn.addActionListener(e -> searchInLog());
+        searchPanel.add(searchField);
+        searchPanel.add(searchBtn);
+        controlPanel.add(searchPanel, BorderLayout.EAST);
+
+        logPanel.add(controlPanel, BorderLayout.NORTH);
+
+        gestioneTabs.addTab("Logs", logPanel);
+
+        mainTabs.addTab("Gestione", gestioneTabs);
+        add(mainTabs, BorderLayout.CENTER);
+
+        refreshLogList();
 
         // Sotto-tab "Utenti e Laboratori"
         JPanel ulPanel = new JPanel(new GridLayout(1, 2));
@@ -282,7 +356,7 @@ public class AdminGUI extends JFrame {
         int index = labList.getSelectedIndex();
 
         if (index >= 0) {
-            GestoreLog.logAction(loggedUser.getNome(), "Ha eliminato un laboratorio con nome: " + gestioneLaboratori.getLaboratoriCache().get(index) + ", con posti: " + gestioneLaboratori.getLaboratoriCache().get(index) + ", indirizzo IP: " + gestioneLaboratori.getLaboratoriCache().get(index) + ", con subnetmask: " + gestioneLaboratori.getLaboratoriCache().get(index));
+            GestoreLog.logAction(loggedUser.getNome(), "Ha eliminato un laboratorio con nome: " + gestioneLaboratori.getLaboratoriCache().get(index) + ", con posti: " + gestioneLaboratori.getLaboratoriCache().get(index).getQntPosti() + ", indirizzo IP: " + gestioneLaboratori.getLaboratoriCache().get(index).getIndirizzoIP() + ", con subnetmask: " + gestioneLaboratori.getLaboratoriCache().get(index).getSubnetMask());
 
             gestioneLaboratori.getLaboratoriCache().remove(index);
             refreshLabList();
@@ -353,6 +427,60 @@ public class AdminGUI extends JFrame {
             refreshDashboard();
         } else {
             JOptionPane.showMessageDialog(this, "Seleziona una prenotazione da eliminare.");
+        }
+    }
+
+    private void refreshLogList() {
+        logListModel.clear();
+        logFiles = new ArrayList<>();
+
+        File logDir = new File(Main.BASE_PATH + File.separator + "logs");
+        if (!logDir.exists()) {
+            logDir.mkdirs();
+        }
+
+        File[] files = logDir.listFiles((dir, name) -> name.toLowerCase().endsWith(".txt"));
+        if (files != null) {
+            for (File f : files) {
+                logFiles.add(f);
+                logListModel.addElement(f.getName() + " - " + (f.length() / 1024) + " KB");
+            }
+        }
+
+        // Se ci sono log, seleziona automaticamente il primo file
+        if (!logFiles.isEmpty()) {
+            currentLogIndex = 0;
+            loadLogContent(logFiles.get(currentLogIndex));
+        }
+    }
+
+
+    private void loadLogContent(File logFile) {
+        try {
+            logTextArea.setText(new String(Files.readAllBytes(Paths.get(logFile.getAbsolutePath()))));
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Errore nel caricamento del log.");
+        }
+    }
+
+    private void navigateLog(int direction) {
+        int newIndex = currentLogIndex + direction;
+        if (newIndex >= 0 && newIndex < logFiles.size()) {
+            currentLogIndex = newIndex;
+            loadLogContent(logFiles.get(currentLogIndex));
+        }
+    }
+
+    private void searchInLog() {
+        String query = searchField.getText().trim().toLowerCase();
+        if (query.isEmpty()) return;
+        String content = logTextArea.getText().toLowerCase();
+        int index = content.indexOf(query);
+        if (index >= 0) {
+            logTextArea.setCaretPosition(index);
+            logTextArea.requestFocus();
+        } else {
+            JOptionPane.showMessageDialog(this, "Nessun risultato trovato.");
         }
     }
 }

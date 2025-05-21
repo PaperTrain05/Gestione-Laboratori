@@ -9,6 +9,9 @@ import it.paper.gestore_lab.object.Utente;
 import it.paper.gestore_lab.utils.FileUtils;
 
 import java.io.File;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -22,6 +25,7 @@ public class Main {
 
     public static void main(String[] args) {
         FileUtils.createDirs(BASE_PATH);
+        verificaLogGiornaliero();
 
         GestioneUtenti gestioneUtenti = new GestioneUtenti();
         GestioneLaboratori gestioneLaboratori = new GestioneLaboratori();
@@ -108,6 +112,27 @@ public class Main {
             return "C:" + File.separator + "PCTO_Mameli";
         } else {
             return System.getProperty("user.home") + File.separator + "PCTO_Mameli";
+        }
+    }
+
+    private static void verificaLogGiornaliero() {
+        String logDirPath = BASE_PATH + File.separator + "logs";
+        File logDir = new File(logDirPath);
+        if (!logDir.exists()) {
+            logDir.mkdirs();
+        }
+
+        String currentDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        String logFilename = logDirPath + File.separator + "log_" + currentDate + ".txt";
+        File logFile = new File(logFilename);
+
+        if (!logFile.exists()) {
+            try {
+                logFile.createNewFile();
+                System.out.println("Creato nuovo file di log: " + logFilename);
+            } catch (IOException e) {
+                System.err.println("Errore nella creazione del file di log: " + e.getMessage());
+            }
         }
     }
 }
