@@ -212,6 +212,11 @@ public class AdminGUI extends JFrame {
     private void deleteSelectedUser() {
         int index = userList.getSelectedIndex();
 
+        if (gestioneUtenti.getUtentiCache().get(index).getNome().equalsIgnoreCase("admin")) {
+            JOptionPane.showMessageDialog(this, "Questo è un utente di sistema, non si può eliminare");
+            return;
+        }
+
         if (index >= 0) {
             gestioneUtenti.getUtentiCache().remove(index);
             refreshUserList();
