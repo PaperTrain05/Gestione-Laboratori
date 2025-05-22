@@ -1,17 +1,21 @@
 plugins {
     id 'java'
+    id "com.github.johnrengelman.shadow" version "7.1.2"
 }
 
-group = 'it.springcraft'
+group = 'it.paper'
 version = '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
+    mavenLocal()
 }
 
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+
+    compileOnly group: 'org.mongodb', name: 'mongodb-driver-sync', version: '5.1.1'
 }
 
 test {

@@ -106,6 +106,7 @@ public class AdminGUI extends JFrame {
                 }
             }
         });
+
         logPanel.add(new JScrollPane(logList), BorderLayout.WEST);
 
         // Area di testo per il contenuto del log
@@ -246,7 +247,7 @@ public class AdminGUI extends JFrame {
         labListModel.clear();
 
         for (Laboratorio lab : gestioneLaboratori.getLaboratoriCache()) {
-            labListModel.addElement(lab.getNome() + " - Posti: " + lab.getQntPosti());
+            labListModel.addElement(lab.getNome() + " - Posti: " + lab.getQntPosti() + " - Gestore: " + lab.getGestoreLab() + " - IP: " + lab.getIndirizzoIP() + " - SM:" + lab.getSubnetMask());
         }
     }
 
@@ -300,7 +301,6 @@ public class AdminGUI extends JFrame {
             gestioneUtenti.getUtentiCache().remove(index);
             refreshUserList();
             refreshDashboard();
-
         } else {
             JOptionPane.showMessageDialog(this, "Seleziona un utente da eliminare.");
         }
