@@ -27,7 +27,6 @@ public class Main {
 
     private static MongoClient mongoClient;
     private static MongoDatabase mongoDatabase;
-    public static final String MONGO_URI = "mongodb://papertrain:123456789@localhost:27017/?directConnection=true&tls=false"; // Modifica qui l'URL
 
     public static void main(String[] args) {
         FileUtils.createDirs(BASE_PATH);
