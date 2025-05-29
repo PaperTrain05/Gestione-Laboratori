@@ -74,6 +74,30 @@ public class AdminGUI extends JFrame {
 
         JTabbedPane mainTabs = new JTabbedPane();
 
+        // Barra dei menu in stile macOS
+        JMenuBar menuBar = new JMenuBar();
+
+        // Menù "Utenti"
+        JMenu utentiMenu = new JMenu("Utenti");
+        JMenuItem cambiaUtente = new JMenuItem("Cambia Utente");
+        cambiaUtente.addActionListener(e -> cambioUtente());
+        utentiMenu.add(cambiaUtente);
+
+        // Menù "File"
+        JMenu fileMenu = new JMenu("File");
+        JMenuItem apriLogDirectory = new JMenuItem("Apri Directory Log");
+        apriLogDirectory.addActionListener(e -> apriCartella(Main.BASE_PATH + File.separator + "logs"));
+        JMenuItem apriFileProgramma = new JMenuItem("Apri Directory Programma");
+        apriFileProgramma.addActionListener(e -> apriCartella(Main.BASE_PATH));
+
+        fileMenu.add(apriLogDirectory);
+        fileMenu.add(apriFileProgramma);
+
+        menuBar.add(utentiMenu);
+        menuBar.add(fileMenu);
+
+        setJMenuBar(menuBar);
+
         // Dashboard Tab
         JPanel dashPanel = new JPanel(new BorderLayout());
         dashboardArea = new JTextArea();
@@ -205,6 +229,19 @@ public class AdminGUI extends JFrame {
         add(mainTabs, BorderLayout.CENTER);
 
         refreshAllAdmin();
+    }
+
+    private void cambioUtente() {
+        dispose();
+        SwingUtilities.invokeLater(Main::loginGUI);
+    }
+
+    private void apriCartella(String percorso) {
+        try {
+            Desktop.getDesktop().open(new File(percorso));
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Errore nell'apertura della cartella: " + percorso, "Errore", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void refreshDashboard() {

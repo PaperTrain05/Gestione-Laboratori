@@ -12,6 +12,7 @@ import it.paper.gestore_lab.object.Utente;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,6 +50,26 @@ public class UserGUI extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JTabbedPane tabs = new JTabbedPane();
+
+        JMenuBar menuBar = new JMenuBar();
+
+        // Menù "Utenti"
+        JMenu utentiMenu = new JMenu("Utenti");
+        JMenuItem cambiaUtente = new JMenuItem("Cambia Utente");
+        cambiaUtente.addActionListener(e -> cambioUtente());
+        utentiMenu.add(cambiaUtente);
+
+        // Menù "File"
+        JMenu fileMenu = new JMenu("File");
+        JMenuItem apriLogDirectory = new JMenuItem("Apri Directory Log");
+        apriLogDirectory.addActionListener(e -> apriCartella(Main.BASE_PATH + File.separator + "logs"));
+
+        fileMenu.add(apriLogDirectory);
+
+        menuBar.add(utentiMenu);
+        menuBar.add(fileMenu);
+
+        setJMenuBar(menuBar);
 
         // Dashboard Tab
         JPanel dashPanel = new JPanel(new BorderLayout());
@@ -93,6 +114,19 @@ public class UserGUI extends JFrame {
 
         refreshDashboard();
         refreshUserPrenotations();
+    }
+
+    private void cambioUtente() {
+        dispose();
+        SwingUtilities.invokeLater(() -> Main.loginGUI());
+    }
+
+    private void apriCartella(String percorso) {
+        try {
+            Desktop.getDesktop().open(new File(percorso));
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Errore nell'apertura della cartella: " + percorso, "Errore", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private JPanel labeled(String label, Component comp) {

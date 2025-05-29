@@ -48,7 +48,7 @@ public class Main {
         loginGUI();
     }
 
-    private static void loginGUI() {
+    public static void loginGUI() {
         JFrame frame = new JFrame("Sistema di Gestione - Login");
         frame.setSize(400, 200);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
