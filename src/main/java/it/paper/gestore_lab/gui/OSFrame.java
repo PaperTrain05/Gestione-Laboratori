@@ -5,13 +5,10 @@ import it.paper.gestore_lab.gui.image.mac.MacInternalFrameUI;
 import it.paper.gestore_lab.gui.image.mac.app.FinderApp;
 
 import javax.swing.*;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyVetoException;
-import java.io.File;
 
 public class OSFrame extends JFrame {
     private BackGroundDesktopPane desktopPane;

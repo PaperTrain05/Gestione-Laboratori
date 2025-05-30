@@ -98,7 +98,6 @@ public class AdminGUI extends JFrame {
             simFrame.setVisible(true);
         });
         simulazioneMenu.add(simMacOS);
-        simulazioneMenu.add(simLinux);
 
         // Menù "File"
         JMenu fileMenu = new JMenu("File");
