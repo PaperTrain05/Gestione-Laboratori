@@ -83,6 +83,23 @@ public class AdminGUI extends JFrame {
         cambiaUtente.addActionListener(e -> cambioUtente());
         utentiMenu.add(cambiaUtente);
 
+        // Menu "Simulazione" con sottomenu "MacOS" e "Linux"
+        JMenu simulazioneMenu = new JMenu("Simulazione");
+        JMenuItem simMacOS = new JMenuItem("MacOS");
+        JMenuItem simLinux = new JMenuItem("Linux");
+        simMacOS.addActionListener(e -> {
+            // Apri la simulazione per MacOS
+            OSFrame simFrame = new OSFrame("MacOS");
+            simFrame.setVisible(true);
+        });
+        simLinux.addActionListener(e -> {
+            // Apri la simulazione per Linux
+            OSFrame simFrame = new OSFrame("Linux");
+            simFrame.setVisible(true);
+        });
+        simulazioneMenu.add(simMacOS);
+        simulazioneMenu.add(simLinux);
+
         // Menù "File"
         JMenu fileMenu = new JMenu("File");
         JMenuItem apriLogDirectory = new JMenuItem("Apri Directory Log");
@@ -95,6 +112,7 @@ public class AdminGUI extends JFrame {
 
         menuBar.add(utentiMenu);
         menuBar.add(fileMenu);
+        menuBar.add(simulazioneMenu);
 
         setJMenuBar(menuBar);
 
